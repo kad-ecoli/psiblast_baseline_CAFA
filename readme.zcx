@@ -1,0 +1,10 @@
+run_blast_baseline.py    # main script for function prediction by blast
+run_psiblast_baseline.py # main script for function prediction by psiblast
+dat                      # directory to store data files
+dat/lib.fasta*           # template sequence database, formated by formatdb
+                         # or makeblastdb
+dat/uniref90.fasta*      # uniref90 database for psiblast to generate check
+                         # point file, formated by formatdb or makeblastdb
+dat/UNIPROT_GOterms.MF   # COFACTOR format uniprot GO MF mapping file
+dat/UNIPROT_GOterms.BP   # COFACTOR format uniprot GO BP mapping file
+dat/UNIPROT_GOterms.CC   # COFACTOR format uniprot GO CC mapping file
