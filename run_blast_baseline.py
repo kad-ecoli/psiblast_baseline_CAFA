@@ -118,7 +118,10 @@ for s in ss:
     
     jobOutput=[os.path.join(datadir,"blastp_GOfreq_MF"),
                os.path.join(datadir,"blastp_GOfreq_BP"),
-               os.path.join(datadir,"blastp_GOfreq_CC")]
+               os.path.join(datadir,"blastp_GOfreq_CC"),
+               os.path.join(datadir,"blastp_lwGOfreq_MF"),
+               os.path.join(datadir,"blastp_lwGOfreq_BP"),
+               os.path.join(datadir,"blastp_lwGOfreq_CC")]
     
     mod=jobmod.substitute(dict(
         tmpdir=os.path.join("/tmp",os.getenv("USER"),tag),
