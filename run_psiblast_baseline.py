@@ -128,10 +128,7 @@ for s in ss:
     
     jobOutput=[os.path.join(datadir,"psiblast_GOfreq_MF"),
                os.path.join(datadir,"psiblast_GOfreq_BP"),
-               os.path.join(datadir,"psiblast_GOfreq_CC"),
-               os.path.join(datadir,"psiblast_lwGOfreq_MF"),
-               os.path.join(datadir,"psiblast_lwGOfreq_BP"),
-               os.path.join(datadir,"psiblast_lwGOfreq_CC")]
+               os.path.join(datadir,"psiblast_GOfreq_CC")]
     
     mod=jobmod.substitute(dict(
         tmpdir=os.path.join("/tmp",os.getenv("USER"),tag),

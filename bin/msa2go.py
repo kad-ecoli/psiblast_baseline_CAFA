@@ -11,9 +11,9 @@ options:
         if -prefix=blastp_ then output GO-MF file will be blastp_MF
 
 output:
-    prefix_{globalID,localID,evalue,GOfreq}_{MF,BP,CC}
+    prefix_{globalID,localID,GOfreq}_{MF,BP,CC}
 
-globalID,localID,GOfreq,evalue are different scoring scheme:
+globalID,localID,GOfreq are different scoring scheme:
     
 Target       AKLMNWTY
 Template1    -KICNWT- GO:0000001 evalue=0.01
@@ -221,9 +221,9 @@ if __name__=="__main__":
         GO_list=label_GO_to_template(GOdb_dict[Aspect],header_list)
         globalID_pred,localID_pred=msa2seqID(GO_list,header_list,sequence)
         GOfreq_pred=msa2GOfreq(GO_list)
-        evalue_pred=msa2evalue(GO_list,header_list,sequence)
-        gwGOfreq_pred,lwGOfreq_pred,ewGOfreq_pred=msa2wGOfreq(
-            GO_list,header_list,sequence)
+        #evalue_pred=msa2evalue(GO_list,header_list,sequence)
+        #gwGOfreq_pred,lwGOfreq_pred,ewGOfreq_pred=msa2wGOfreq(
+        #    GO_list,header_list,sequence)
 
         fp=open(prefix+"globalID_"+Aspect,'w')
         fp.write(globalID_pred.replace("\t","\t%s\t"%Aspect[-1]))
@@ -237,18 +237,18 @@ if __name__=="__main__":
         fp.write(GOfreq_pred.replace("\t","\t%s\t"%Aspect[-1]))
         fp.close()
 
-        fp=open(prefix+"evalue_"+Aspect,'w')
-        fp.write(evalue_pred.replace("\t","\t%s\t"%Aspect[-1]))
-        fp.close()
+        #fp=open(prefix+"evalue_"+Aspect,'w')
+        #fp.write(evalue_pred.replace("\t","\t%s\t"%Aspect[-1]))
+        #fp.close()
 
-        fp=open(prefix+"gwGOfreq_"+Aspect,'w')
-        fp.write(gwGOfreq_pred.replace("\t","\t%s\t"%Aspect[-1]))
-        fp.close()
+        #fp=open(prefix+"gwGOfreq_"+Aspect,'w')
+        #fp.write(gwGOfreq_pred.replace("\t","\t%s\t"%Aspect[-1]))
+        #fp.close()
 
-        fp=open(prefix+"lwGOfreq_"+Aspect,'w')
-        fp.write(lwGOfreq_pred.replace("\t","\t%s\t"%Aspect[-1]))
-        fp.close()
+        #fp=open(prefix+"lwGOfreq_"+Aspect,'w')
+        #fp.write(lwGOfreq_pred.replace("\t","\t%s\t"%Aspect[-1]))
+        #fp.close()
 
-        fp=open(prefix+"ewGOfreq_"+Aspect,'w')
-        fp.write(ewGOfreq_pred.replace("\t","\t%s\t"%Aspect[-1]))
-        fp.close()
+        #fp=open(prefix+"ewGOfreq_"+Aspect,'w')
+        #fp.write(ewGOfreq_pred.replace("\t","\t%s\t"%Aspect[-1]))
+        #fp.close()
