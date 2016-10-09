@@ -1,5 +1,10 @@
-run_blast_baseline.py    # main script for function prediction by blast
-run_psiblast_baseline.py # main script for function prediction by psiblast
+run_blast_baseline.py    # (obsolete) main script for function prediction
+                         # by blast
+run_psiblast_baseline.py # (obsolete) main script for function prediction
+                         # by psiblast
+run_GOfreq.py            # main script for function prediction by combining
+                         # blast and psiblast
+
 dat                      # directory to store data files
 dat/lib.fasta*           # template sequence database, formated by formatdb
                          # or makeblastdb
@@ -8,3 +13,16 @@ dat/uniref90.fasta*      # uniref90 database for psiblast to generate check
 dat/UNIPROT_GOterms.MF   # COFACTOR format uniprot GO MF mapping file
 dat/UNIPROT_GOterms.BP   # COFACTOR format uniprot GO BP mapping file
 dat/UNIPROT_GOterms.CC   # COFACTOR format uniprot GO CC mapping file
+
+bin                      # directory for executables
+bin/blastp               # BLAST executable from NCBI-BLAST+
+bin/psiblast             # PSI-BLAST executable from NCBI-BLAST+
+bin/blast2msa.py         # convert XML format (PSI)BLAST output to MSA
+bin/filter_aln.py        # remove templates in MSA that share specified 
+                         # sequence similarity to query
+bin/msa2go.py            # predict GO from MSA
+bin/combineGOfreq.py     # combine GOfreq score from BLAST and PSIBLAST
+
+
+'''how to run GOfreq for GO prediction'''
+run "run_GOfreq.py" without argument and there will be help message.
