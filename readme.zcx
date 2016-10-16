@@ -22,6 +22,7 @@ bin/filter_aln.py        # remove templates in MSA that share specified
                          # sequence similarity to query
 bin/msa2go.py            # predict GO from MSA
 bin/combineGOfreq.py     # combine GOfreq score from BLAST and PSIBLAST
+bin/cscore2csv.py        # clean up GOfreq output
 
 
 '''how to run GOfreq for GO prediction'''
