@@ -88,9 +88,9 @@ jobmod=Template('''#!/bin/bash
 #### prepare tmp directory ####
 mkdir -p $tmpdir
 rm -rf $tmpdir/*
-cd       $tmpdir
+cd     $tmpdir
 cp $outdir/$s/seq.fasta .
-cp $bindir/* .
+cp -rp $bindir/* .
 
 #### calculate blastp GOfreq score ####
 if [ -s $outdir/$s/blastp.xml.gz ];then
@@ -115,6 +115,17 @@ gzip blastp.xml
 cp $tmpdir/blastp.xml* $outdir/$s/
 cp $tmpdir/blastp.msa* $outdir/$s/
 cp $tmpdir/blastp_*_*  $outdir/$s/
+
+#### if perfect match was found, do not run psiblast ####
+if [[ ! -z "$(grep '1\.00' blastp_globalID_MF)" && \\
+      ! -z "$(grep '1\.00' blastp_globalID_BP)" && \\
+      ! -z "$(grep '1\.00' blastp_globalID_CC)" ]];then
+    cp $tmpdir/blastp_GOfreq_MF $outdir/$s/combine_GOfreq_MF
+    cp $tmpdir/blastp_GOfreq_BP $outdir/$s/combine_GOfreq_BP
+    cp $tmpdir/blastp_GOfreq_CC $outdir/$s/combine_GOfreq_CC
+    rm -rf $tmpdir
+    exit
+fi
 
 #### calculate psiblast GOfreq and localID score ####
 if [ -s $outdir/$s/psiblast.xml.gz ];then
