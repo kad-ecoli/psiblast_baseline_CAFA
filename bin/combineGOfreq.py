@@ -19,7 +19,7 @@ Result of blastp-GOfreq and psiblast-GOfreq are combined by:
 '''
 import sys,os
 
-t_dict={'MF':1.0,'BP':1.0,'CC':0.5}
+t_dict={'MF':0.5,'BP':0.5,'CC':1.0}
 
 def parseGOfreq(GOfreq_file="psiblast_GOfreq_MF"):
     '''parse GOfreq prediction data file. return a dict whose key is 
