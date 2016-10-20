@@ -37,21 +37,23 @@ def parseGOfreq(GOfreq_file="psiblast_GOfreq_MF"):
 def combineGOfreq(t=1,seqID_file="psiblast_localID_MF",
     psiblast_file="psiblast_GOfreq_MF",blast_file="blastp_GOfreq_BP"):
     '''combine PSIBLAST-GOfreq and BLAST-GOfreq score.'''
-    GOfreq_pred=''
 
     seqID_dict=parseGOfreq(seqID_file)
     psiblast_dict=parseGOfreq(psiblast_file)
     blastp_dict=parseGOfreq(blastp_file)
 
     seqID=max([0]+seqID_dict.values())
-
+    
+    GOfreq_pred_list=[]
     for GOterm in sorted(psiblast_dict):
         if not GOterm in blastp_dict:
             blastp_dict[GOterm]=0
         cscore=(seqID**t)*  blastp_dict[GOterm]+ \
              (1-seqID**t)*psiblast_dict[GOterm]
-        if cscore:
-            GOfreq_pred+="%s\t%.2f\n"%(GOterm,cscore)
+        if float('%.2f'%cscore):
+            GOfreq_pred_list.append((cscore,GOterm))
+    GOfreq_pred=''.join(['%s\t%.2f\n'%(GOterm,cscore) for cscore,GOterm \
+        in sorted(GOfreq_pred_list,reverse=True)])
     return GOfreq_pred
 
 if __name__=="__main__":

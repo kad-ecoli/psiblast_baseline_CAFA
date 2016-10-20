@@ -67,9 +67,16 @@ def msa2seqID(GO_list,header_list,sequence):
                 GO_globalID_pred_dict[GO]=globalID
                 GO_localID_pred_dict[GO]=localID
     
-    for GO in GO_globalID_pred_dict:
-        globalID_pred+="%s\t%.2f\n"%(GO,GO_globalID_pred_dict[GO])
-        localID_pred+="%s\t%.2f\n"%(GO,GO_localID_pred_dict[GO])
+    globalID_pred_list=[(GO_globalID_pred_dict[GO],GO) for GO in \
+        GO_globalID_pred_dict]
+    localID_pred_list=[(GO_localID_pred_dict[GO],GO) for GO in \
+        GO_localID_pred_dict]
+
+    globalID_pred=''.join(["%s\t%.2f\n"%(GO,cscore) for cscore,GO in \
+        sorted(globalID_pred_list,reverse=True)])
+    localID_pred=''.join(["%s\t%.2f\n"%(GO,cscore) for cscore,GO in \
+        sorted(localID_pred_list,reverse=True)])
+
     return globalID_pred,localID_pred
 
 def scale_evalue(evalue=0):
@@ -106,7 +113,6 @@ def msa2evalue(GO_list,header_list,sequence):
 def msa2GOfreq(GO_list):
     '''GO prediction using the frequency of a GO term being annotated in all 
     templates'''
-    GOfreq_pred='' # CSV format GO prediction
     
     annotated_template_num=0. # number of templates annotated by at least one GO
     GO_list_cat=[]
@@ -116,10 +122,14 @@ def msa2GOfreq(GO_list):
             annotated_template_num+=1.
     GO_set=set(GO_list_cat)
 
+    GOfreq_pred_list=[]
     for GO in GO_set:
         GO_count=len([line for line in GO_list if GO in line])
         GO_freq=GO_count/annotated_template_num
-        GOfreq_pred+="%s\t%.2f\n"%(GO,GO_freq)
+        GOfreq_pred_list.append((GO_freq,GO))
+
+    GOfreq_pred=''.join(["%s\t%.2f\n"%(GO,GO_freq) for GO_freq,GO in \
+        sorted(GOfreq_pred_list,reverse=True)])
     return GOfreq_pred
 
 def msa2wGOfreq(GO_list,header_list,sequence):
@@ -218,6 +228,9 @@ if __name__=="__main__":
     header_list,sequence_list=read_multiple_fasta(argv[1])
 
     for Aspect in GOdb_dict:
+        if not GOdb_dict[Aspect]:
+            continue
+
         GO_list=label_GO_to_template(GOdb_dict[Aspect],header_list)
         globalID_pred,localID_pred=msa2seqID(GO_list,header_list,sequence)
         GOfreq_pred=msa2GOfreq(GO_list)
