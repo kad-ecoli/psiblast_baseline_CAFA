@@ -50,7 +50,8 @@ def combineGOfreq(t=1,seqID_file="psiblast_localID_MF",
             blastp_dict[GOterm]=0
         cscore=(seqID**t)*  blastp_dict[GOterm]+ \
              (1-seqID**t)*psiblast_dict[GOterm]
-        GOfreq_pred+="%s\t%.2f\n"%(GOterm,cscore)
+        if cscore:
+            GOfreq_pred+="%s\t%.2f\n"%(GOterm,cscore)
     return GOfreq_pred
 
 if __name__=="__main__":
