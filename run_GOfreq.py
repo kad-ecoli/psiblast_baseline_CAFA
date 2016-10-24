@@ -86,6 +86,12 @@ if not os.path.isdir(recorddir):
     os.makedirs(recorddir)
 jobmod=Template('''#!/bin/bash
 #### prepare tmp directory ####
+tmpdir="/scratch/$USER/$SLURM_JOBID"; # on COMET computing node
+if [ ! -d "$tmpdir" ] || [ -z "$SLURM_JOBID" ] ; then
+    tmpdir="/tmp/$USER"
+fi
+tmpdir="$tmpdir/$tag"
+
 mkdir -p $tmpdir
 rm -rf $tmpdir/*
 cd     $tmpdir
@@ -173,7 +179,7 @@ rm -rf $tmpdir
 #### job template END ##############
 
 #### Job submit START ##############
-walltime="walltime=1:00:00,mem=10gb"
+walltime="walltime=10:00:00,mem=10gb"
 JOBS = jobsubmit.JOBS(walltime=walltime, priority=Q)
 for s in ss:
     datadir=os.path.join(outdir,s)
@@ -184,8 +190,9 @@ for s in ss:
                os.path.join(datadir,"combine_GOfreq_BP"),
                os.path.join(datadir,"combine_GOfreq_CC")]
     
-    mod=jobmod.substitute(dict(
-        tmpdir=os.path.join("/tmp",os.getenv("USER"),tag),
+    mod=jobmod.safe_substitute(dict(
+        #tmpdir=os.path.join("/tmp",os.getenv("USER"),tag),
+        tag=tag,
         bindir=bindir,
         outdir=outdir,
         datdir=datdir,
