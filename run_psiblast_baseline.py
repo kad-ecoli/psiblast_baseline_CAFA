@@ -29,7 +29,6 @@ output file:
     psiblast_globalID_* (CSV format GO prediction file using global seqID)
     psiblast_localID_*  (CSV format GO prediction file using local seqID)
     psiblast_GOfreq_*   (CSV format GO prediction file using GO frequency)
-    psiblast_evalue_*   (CSV format GO prediction file using e-value)
 '''
 import os,sys
 from module import jobsubmit

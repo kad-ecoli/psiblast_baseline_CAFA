@@ -29,7 +29,6 @@ output file:
     blastp_globalID_* (CSV format GO prediction file using global seqID)
     blastp_localID_*  (CSV format GO prediction file using local seqID)
     blastp_GOfreq_*   (CSV format GO prediction file using GO frequency)
-    blastp_evalue_*   (CSV format GO prediction file using e-value)
 '''
 import os,sys
 from module import jobsubmit
