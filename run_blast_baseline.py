@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 docstring='''
-run_naive_baseline.py config.py
+run_blast_baseline.py config.py
     run blast baseline protein function prediction as implemented in CAFA
 
 input file:
