@@ -76,9 +76,16 @@ recorddir=os.path.join(outdir,'record')
 if not os.path.isdir(recorddir):
     os.makedirs(recorddir)
 jobmod=Template('''#!/bin/bash
+#### prepare tmp directory ####
+tmpdir="/scratch/$USER/$SLURM_JOBID"; # on COMET computing node
+if [ ! -d "$tmpdir" ] || [ -z "$SLURM_JOBID" ] ; then
+    tmpdir="/tmp/$USER"
+fi
+tmpdir="$tmpdir/$tag"
+
 mkdir -p $tmpdir
 rm -rf $tmpdir/*
-cd       $tmpdir
+cd     $tmpdir
 cp $outdir/$s/seq.fasta .
 cp $bindir/* .
 if [ -s $outdir/$s/blastp.xml.gz ];then
@@ -120,7 +127,8 @@ for s in ss:
                os.path.join(datadir,"blastp_GOfreq_CC")]
     
     mod=jobmod.substitute(dict(
-        tmpdir=os.path.join("/tmp",os.getenv("USER"),tag),
+        #tmpdir=os.path.join("/tmp",os.getenv("USER"),tag),
+        tag=tag,
         bindir=bindir,
         outdir=outdir,
         datdir=datdir,
