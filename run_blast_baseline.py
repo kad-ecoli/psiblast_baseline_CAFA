@@ -126,7 +126,7 @@ for s in ss:
                os.path.join(datadir,"blastp_GOfreq_BP"),
                os.path.join(datadir,"blastp_GOfreq_CC")]
     
-    mod=jobmod.substitute(dict(
+    mod=jobmod.safe_substitute(dict(
         #tmpdir=os.path.join("/tmp",os.getenv("USER"),tag),
         tag=tag,
         bindir=bindir,
