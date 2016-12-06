@@ -122,9 +122,9 @@ for s in ss:
     tag="HHB_"+s+'_'+str(run) # uniq name for job
     jobname=os.path.join(recorddir,tag)
     
-    jobOutput=[os.path.join(datadir,"hhblits_GOfreq_MF"),
-               os.path.join(datadir,"hhblits_GOfreq_BP"),
-               os.path.join(datadir,"hhblits_GOfreq_CC")]
+    jobOutput=[os.path.join(datadir,"hhblits_gwGOfreq_MF"),
+               os.path.join(datadir,"hhblits_gwGOfreq_BP"),
+               os.path.join(datadir,"hhblits_gwGOfreq_CC")]
     
     mod=jobmod.safe_substitute(dict(
         #tmpdir=os.path.join("/tmp",os.getenv("USER"),tag),
