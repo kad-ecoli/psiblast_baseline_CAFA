@@ -18,10 +18,19 @@ option:
         CAFA: GOterm Cscore
     -target='' target name
         If not empty, it will show at the beginning of every line 
+    -T={eps,ps,svg,png} plot directed acyclic directed graph (DAG) by
+        graphviz in the specified format. default is do not plot DAG.
+        The output image file will be named after the input file.
+    -execpath=dot
+        path to graphviz's "dot" executable. default is at the same folder
+        of this script.
 '''
-import sys
+import sys,os
 from module import obo2csv
 from module.fetch import wget
+import subprocess
+import textwrap
+
 obo_url="http://geneontology.org/ontology/go-basic.obo"
 
 def cscore2csv(GOfreq_txt='',obo_dict=dict(),infmt="GOfreq",outfmt="default",
@@ -65,6 +74,7 @@ def cscore2csv(GOfreq_txt='',obo_dict=dict(),infmt="GOfreq",outfmt="default",
                 report_dict[Aspect][GOterm]=Cscore
     
     report_txt=''
+    GOterm_dict=dict() # a dict whose key is 
     for Aspect in report_dict:
         ## [5] removing redundant predictions
         for GOterm in report_dict[Aspect].keys():
@@ -76,6 +86,9 @@ def cscore2csv(GOfreq_txt='',obo_dict=dict(),infmt="GOfreq",outfmt="default",
                 if parent_GOterm in report_dict[Aspect] and report_dict[
                     Aspect][parent_GOterm]<=report_dict[Aspect][GOterm]:
                     del report_dict[Aspect][parent_GOterm]
+        if not report_dict[Aspect]:
+            del report_dict[Aspect]
+            continue
 
         ## [6] rank GOterm by Cscore in descending order
         report_list=sorted([(report_dict[Aspect][GOterm],GOterm)
@@ -90,12 +103,77 @@ def cscore2csv(GOfreq_txt='',obo_dict=dict(),infmt="GOfreq",outfmt="default",
             else:
                 sys.stderr.write("ERROR! Unknown format %s\n"%outfmt)
             report_txt+=(target+'\t')*(target!='')+line
-    return report_txt
+    return report_txt,report_dict
+
+def detect_graphviz(execpath=''):
+    '''locate the path of graphviz's "dot" executable'''
+    if execpath:
+        execpath=os.path.abspath(execpath)
+    elif os.path.isfile(os.path.join(os.path.dirname(__file__),"dot")):
+        execpath=os.path.join(os.path.dirname(__file__),"dot")
+    if not os.path.isfile(execpath):
+        execpath="dot"
+    return execpath
+
+def make_GOterm_node(GOterm,obo_dict,cscore=0):
+    '''make node in graphviz graph for a GO term'''
+    color_list=["red","orange","yellow","green","cyan","blue","white"]
+    color=color_list[min([int((1-cscore)*10),len(color_list)-1])]
+    GVtxt='"%s"[label="%s" shape=rectangle fillcolor=%s style=filled];'%(
+        GOterm,GOterm+'\n'+textwrap.fill(obo_dict.Term(GOterm).name,25),color)
+    return GVtxt
+
+def draw_GO_DAG(report_dict,dag_img,obo_dict,T,execpath):
+    '''plot directed acyclic graph listed for GO terms listed in "report_dict".
+    write the image file to "dag_img". use "T" as output format. Use graphviz
+    executable "execpath" for image compilation
+    '''
+    GOterm_list=[]
+    is_a_list=[]
+    GVtxt='digraph G{ graph[splines=true,rankdir="BT"];'
+    for Aspect in report_dict:
+        for GOterm in report_dict[Aspect]:
+            if not GOterm in GOterm_list:
+                cscore=report_dict[Aspect][GOterm]
+                GVtxt+=make_GOterm_node(GOterm,obo_dict,cscore)
+                GOterm_list.append(GOterm)
+
+            # set of parent nodes whose is_a relation is plotted,
+            parent_node_set=set(obo_dict.is_a(GOterm,direct=False,
+                name=False,number=False).strip().split())-set([GOterm])
+            # list of parent nodes whose is_a relation is plotted
+            plotted_parent_list=[GOterm]
+
+            while(parent_node_set):
+                for GOterm in list(plotted_parent_list):
+                    direct_parent_node_set=set(obo_dict.is_a(GOterm,
+                        direct=True,name=False,number=False).strip(
+                        ).split())-set([GOterm])
+                    parent_node_set-=direct_parent_node_set
+                    plotted_parent_list+=list(direct_parent_node_set)
+                    for direct_parent in list(direct_parent_node_set):
+                        if not (GOterm,direct_parent) in is_a_list:
+                            GVtxt+='"%s"->"%s";'%(GOterm,direct_parent)
+                            is_a_list.append((GOterm,direct_parent))
+                            if not direct_parent in GOterm_list:
+                                GVtxt+=make_GOterm_node(direct_parent,obo_dict)
+                                GOterm_list.append(GOterm)
+    GVtxt+="}"
+
+    p=subprocess.Popen("%s -T%s"%(execpath,T),shell=True,
+        stdin=subprocess.PIPE,stdout=subprocess.PIPE)
+    stdout,stderr=p.communicate(input=GVtxt)
+    fp=open(dag_img,'w')
+    fp.write(stdout)
+    fp.close()
+    return
 
 if __name__=="__main__":
     infmt="GOfreq"
     outfmt="default"
     excludeGO="GO:0005515,GO:0005488,GO:0003674,GO:0008150,GO:0005575"
+    T=""        # do not plot DAG
+    execpath="" # path of graphviz executable
     target=''
 
     argv=[]
@@ -108,13 +186,15 @@ if __name__=="__main__":
             excludeGO=arg[len("-excludeGO="):]
         elif arg.startswith("-target="):
             target=arg[len("-target="):]
+        elif arg.startswith("-T="):
+            T=arg[len("-T="):]
         elif arg.startswith('-'):
             sys.stderr.write("ERROR! Unknown format %s\n"%arg)
             exit()
         else:
             argv.append(arg)
 
-    if len(sys.argv)<2:
+    if len(argv)<1:
         sys.stderr.write(docstring)
         exit()
 
@@ -129,12 +209,21 @@ if __name__=="__main__":
     GOfreq_txt=fp.read()
     fp.close()
 
-    report_txt=cscore2csv(GOfreq_txt,obo_dict,infmt,outfmt,excludeGO,target)
+    report_txt,report_dict=cscore2csv(
+        GOfreq_txt,obo_dict,infmt,outfmt,excludeGO,target)
 
     #### write output ####
     fp=sys.stdout
-    if len(argv)==2:
-        fp=open(sys.argv[1],'w')
+    if len(argv)>1:
+        fp=open(argv[1],'w')
     fp.write(report_txt)
-    if len(argv)==2:
+    if len(argv)>1:
         fp.close()
+
+    #### plot DAG using graphviz ####
+    if T:
+        execpath=detect_graphviz(execpath)
+        dag_img=argv[0]+'.'+T
+        if len(argv)>2:
+            dag_img=argv[2]
+        draw_GO_DAG(report_dict,dag_img,obo_dict,T,execpath)
