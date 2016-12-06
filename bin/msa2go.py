@@ -136,12 +136,15 @@ def msa2wGOfreq(GO_list,header_list,sequence):
     '''GO prediction by globalID/localID/evalue weighted GOfreq'''
     gwGOfreq_pred='' # CSV format GO prediction by global seqID weighted GOfreq
     lwGOfreq_pred='' # CSV format GO prediction by local seqID weighted GOfreq
-    ewGOfreq_pred='' # CSV format GO prediction by evalue weighted GOfreq
+    #ewGOfreq_pred='' # CSV format GO prediction by evalue weighted GOfreq
     seqlen=len(sequence)
 
     GO_gwGOfreq_pred_dict=dict()
     GO_lwGOfreq_pred_dict=dict()
-    GO_ewGOfreq_pred_dict=dict()
+    #GO_ewGOfreq_pred_dict=dict()
+    
+    total_globalID=0.
+    total_localID=0.
     for line,header in zip(GO_list,header_list):
         if not line:
             continue
@@ -150,25 +153,36 @@ def msa2wGOfreq(GO_list,header_list,sequence):
         aligned_residue_num=float(seqID.split('/')[1])
         globalID=identical_residue_num/seqlen
         localID=identical_residue_num/aligned_residue_num
-        evalue=float(header.split()[1])
-        cscore=scale_evalue(evalue)
+        #evalue=float(header.split()[1])
+        #cscore=scale_evalue(evalue)
         for GO in line:
             if GO in GO_gwGOfreq_pred_dict:
                 GO_gwGOfreq_pred_dict[GO]+=globalID
                 GO_lwGOfreq_pred_dict[GO]+=localID
-                GO_ewGOfreq_pred_dict[GO]+=cscore
+                #GO_ewGOfreq_pred_dict[GO]+=cscore
             else:
                 GO_gwGOfreq_pred_dict[GO]=globalID
                 GO_lwGOfreq_pred_dict[GO]=localID
-                GO_ewGOfreq_pred_dict[GO]=cscore
+                #GO_ewGOfreq_pred_dict[GO]=cscore
+        total_globalID+=globalID
+        total_localID+=localID
 
-    annotated_template_num=1.*len([line for line in GO_list if line])
+    #annotated_template_num=1.*len([line for line in GO_list if line])
+    gwGOfreq_pred_list=[(GO_gwGOfreq_pred_dict[GO]/total_globalID,GO
+        ) for GO in GO_gwGOfreq_pred_dict]
+    lwGOfreq_pred_list=[(GO_lwGOfreq_pred_dict[GO]/total_localID,GO
+        ) for GO in GO_lwGOfreq_pred_dict]
 
-    for GO in GO_gwGOfreq_pred_dict:
-        gwGOfreq_pred+="%s\t%.2f\n"%(GO,GO_gwGOfreq_pred_dict[GO]/annotated_template_num)
-        lwGOfreq_pred+="%s\t%.2f\n"%(GO,GO_lwGOfreq_pred_dict[GO]/annotated_template_num)
-        ewGOfreq_pred+="%s\t%.2f\n"%(GO,GO_ewGOfreq_pred_dict[GO]/annotated_template_num)
-    return gwGOfreq_pred,lwGOfreq_pred,ewGOfreq_pred
+    gwGOfreq_pred=''.join(["%s\t%.3f\n"%(GO,cscore) for cscore,GO in \
+        sorted(gwGOfreq_pred_list,reverse=True)])
+    lwGOfreq_pred=''.join(["%s\t%.3f\n"%(GO,cscore) for cscore,GO in \
+        sorted(lwGOfreq_pred_list,reverse=True)])
+
+    #for GO in GO_gwGOfreq_pred_dict:
+        #gwGOfreq_pred+="%s\t%.2f\n"%(GO,GO_gwGOfreq_pred_dict[GO]/total_globalID)
+        #lwGOfreq_pred+="%s\t%.2f\n"%(GO,GO_lwGOfreq_pred_dict[GO]/total_localID)
+        #ewGOfreq_pred+="%s\t%.2f\n"%(GO,GO_ewGOfreq_pred_dict[GO]/annotated_template_num)
+    return gwGOfreq_pred,lwGOfreq_pred #,ewGOfreq_pred
 
 def parse_GOdb(GOdb=''):
     '''parse COFACTOR format GO mapping file "GOdb"
@@ -236,7 +250,8 @@ if __name__=="__main__":
         GOfreq_pred=msa2GOfreq(GO_list)
         #evalue_pred=msa2evalue(GO_list,header_list,sequence)
         #gwGOfreq_pred,lwGOfreq_pred,ewGOfreq_pred=msa2wGOfreq(
-        #    GO_list,header_list,sequence)
+        gwGOfreq_pred,lwGOfreq_pred=msa2wGOfreq(
+            GO_list,header_list,sequence)
 
         fp=open(prefix+"globalID_"+Aspect,'w')
         fp.write(globalID_pred.replace("\t","\t%s\t"%Aspect[-1]))
@@ -254,13 +269,13 @@ if __name__=="__main__":
         #fp.write(evalue_pred.replace("\t","\t%s\t"%Aspect[-1]))
         #fp.close()
 
-        #fp=open(prefix+"gwGOfreq_"+Aspect,'w')
-        #fp.write(gwGOfreq_pred.replace("\t","\t%s\t"%Aspect[-1]))
-        #fp.close()
+        fp=open(prefix+"gwGOfreq_"+Aspect,'w')
+        fp.write(gwGOfreq_pred.replace("\t","\t%s\t"%Aspect[-1]))
+        fp.close()
 
-        #fp=open(prefix+"lwGOfreq_"+Aspect,'w')
-        #fp.write(lwGOfreq_pred.replace("\t","\t%s\t"%Aspect[-1]))
-        #fp.close()
+        fp=open(prefix+"lwGOfreq_"+Aspect,'w')
+        fp.write(lwGOfreq_pred.replace("\t","\t%s\t"%Aspect[-1]))
+        fp.close()
 
         #fp=open(prefix+"ewGOfreq_"+Aspect,'w')
         #fp.write(ewGOfreq_pred.replace("\t","\t%s\t"%Aspect[-1]))
