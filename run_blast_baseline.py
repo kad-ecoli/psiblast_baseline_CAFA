@@ -6,29 +6,29 @@ run_blast_baseline.py config.py
 input file:
     config.py (configuration file in the following format:
 
-              seq="seq.txt" 
-                # fasta file for all queries
-              outdir="."
-                # output directory, default value is directory of
-                # "seq.txt". Each prediction target should has its
-                # own folder. Under each folder, there should be a
-                # fasta format sequence file called "seq.fasta"
-              evalue=0.01
-                # blastp evalue cutoff for function transfer
-              Q="default"
-                # queue destination
-              run="real"
-                # if "real", preserve all templates
-                # if "benchmark", remove templates sharing >=0.3 seqID
-                # if set to a number, remove templates sharing
-                # at least specified seqID
+        seq="seq.txt" 
+            # fasta file for all queries
+        outdir="."
+            # output directory, default value is directory of
+            # "seq.txt". Each prediction target should has its
+            # own folder. Under each folder, there should be a
+            # fasta format sequence file called "seq.fasta"
+        evalue=0.01
+            # blastp evalue cutoff for function transfer
+        Q="default"
+            # queue destination
+        run="real"
+            # if "real", preserve all templates
+            # if "benchmark", remove templates sharing >=0.3 seqID
+            # if set to a number, remove templates sharing
+            # at least specified seqID
 
 output file:
-    blastp.xml.gz     (XML format blastp output)
-    blastp.msa*       (reorgnized MSA)
-    blastp_globalID_* (CSV format GO prediction file using global seqID)
-    blastp_localID_*  (CSV format GO prediction file using local seqID)
-    blastp_GOfreq_*   (CSV format GO prediction file using GO frequency)
+    blastp.xml.gz       (XML format blastp output)
+    blastp.msa*         (reorgnized MSA)
+    blastp_globalID_*   (CSV format GO prediction file using global seqID)
+    blastp_localID_*    (CSV format GO prediction file using local seqID)
+    blastp_GOfreq_*     (CSV format GO prediction file using GO frequency)
 '''
 import os,sys
 from module import jobsubmit
@@ -46,7 +46,7 @@ bindir=os.path.join(os.path.dirname(os.path.abspath(__file__)),"bin")
 datdir=os.path.join(os.path.dirname(os.path.abspath(__file__)),"dat")
 
 seq=''        # fasta file for all sequences
-outdir='.'  # input directory
+outdir='.'    # input directory
 evalue=0.01   # blastp evalue cutoff
 run='real'
 
@@ -122,9 +122,9 @@ for s in ss:
     tag="BLP_"+s+'_'+str(run) # uniq name for job
     jobname=os.path.join(recorddir,tag)
     
-    jobOutput=[os.path.join(datadir,"blastp_GOfreq_MF"),
-               os.path.join(datadir,"blastp_GOfreq_BP"),
-               os.path.join(datadir,"blastp_GOfreq_CC")]
+    jobOutput=[os.path.join(datadir,"blastp_gwGOfreq_MF"),
+               os.path.join(datadir,"blastp_gwGOfreq_BP"),
+               os.path.join(datadir,"blastp_gwGOfreq_CC")]
     
     mod=jobmod.safe_substitute(dict(
         #tmpdir=os.path.join("/tmp",os.getenv("USER"),tag),

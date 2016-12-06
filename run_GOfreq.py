@@ -55,7 +55,7 @@ bindir=os.path.join(os.path.dirname(os.path.abspath(__file__)),"bin")
 datdir=os.path.join(os.path.dirname(os.path.abspath(__file__)),"dat")
 
 seq=''        # fasta file for all sequences
-outdir='.'  # input directory
+outdir='.'    # input directory
 evalue=0.01   # blastp evalue cutoff
 run='real'
 
@@ -126,9 +126,9 @@ cp $tmpdir/blastp_*_*  $outdir/$s/
 if [[ ! -z "$(grep '1\.00' blastp_globalID_MF)" && \\
       ! -z "$(grep '1\.00' blastp_globalID_BP)" && \\
       ! -z "$(grep '1\.00' blastp_globalID_CC)" ]];then
-    cp $tmpdir/blastp_GOfreq_MF $outdir/$s/combine_GOfreq_MF
-    cp $tmpdir/blastp_GOfreq_BP $outdir/$s/combine_GOfreq_BP
-    cp $tmpdir/blastp_GOfreq_CC $outdir/$s/combine_GOfreq_CC
+    cp $tmpdir/blastp_gwGOfreq_MF $outdir/$s/combine_gwGOfreq_MF
+    cp $tmpdir/blastp_gwGOfreq_BP $outdir/$s/combine_gwGOfreq_BP
+    cp $tmpdir/blastp_gwGOfreq_CC $outdir/$s/combine_gwGOfreq_CC
     rm -rf $tmpdir
     exit
 fi
@@ -171,7 +171,7 @@ cp $tmpdir/psiblast_*_*  $outdir/$s/
 
 #### combine blastp and psiblast ####
 ./combineGOfreq.py .
-cp $tmpdir/combine_GOfreq_* $outdir/$s/
+cp $tmpdir/combine_gwGOfreq_* $outdir/$s/
 
 #### clean up ####
 rm -rf $tmpdir
@@ -179,16 +179,16 @@ rm -rf $tmpdir
 #### job template END ##############
 
 #### Job submit START ##############
-walltime="walltime=10:00:00,mem=10gb"
+walltime="walltime=10:00:00,mem=7gb"
 JOBS = jobsubmit.JOBS(walltime=walltime, priority=Q)
 for s in ss:
     datadir=os.path.join(outdir,s)
     tag="GOF_"+s+'_'+str(run) # uniq name for job
     jobname=os.path.join(recorddir,tag)
     
-    jobOutput=[os.path.join(datadir,"combine_GOfreq_MF"),
-               os.path.join(datadir,"combine_GOfreq_BP"),
-               os.path.join(datadir,"combine_GOfreq_CC")]
+    jobOutput=[os.path.join(datadir,"combine_gwGOfreq_MF"),
+               os.path.join(datadir,"combine_gwGOfreq_BP"),
+               os.path.join(datadir,"combine_gwGOfreq_CC")]
     
     mod=jobmod.safe_substitute(dict(
         #tmpdir=os.path.join("/tmp",os.getenv("USER"),tag),

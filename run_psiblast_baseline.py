@@ -6,22 +6,22 @@ run_psiblast_baseline.py config.py
 input file:
     config.py (configuration file in the following format:
 
-              seq="seq.txt" 
-                # fasta file for all queries
-              outdir="."
-                # output directory, default value is directory of
-                # "seq.txt". Each prediction target should has its
-                # own folder. Under each folder, there should be a
-                # fasta format sequence file called "seq.fasta"
-              evalue=0.01
-                # PSI-BLAST evalue cutoff for function transfer
-              Q="default"
-                # queue destination
-              run="real"
-                # if "real", preserve all templates
-                # if "benchmark", remove templates sharing >=0.3 seqID
-                # if set to a number, remove templates sharing
-                # at least specified seqID
+        seq="seq.txt" 
+            # fasta file for all queries
+        outdir="."
+            # output directory, default value is directory of
+            # "seq.txt". Each prediction target should has its
+            # own folder. Under each folder, there should be a
+            # fasta format sequence file called "seq.fasta"
+        evalue=0.01
+            # psiblast evalue cutoff for function transfer
+        Q="default"
+            # queue destination
+        run="real"
+            # if "real", preserve all templates
+            # if "benchmark", remove templates sharing >=0.3 seqID
+            # if set to a number, remove templates sharing
+            # at least specified seqID
 
 output file:
     psiblast.xml.gz     (XML format PSI-BLAST output)
@@ -92,6 +92,7 @@ if [ -s $outdir/$s/psiblast.xml.gz ];then
     cp $outdir/$s/psiblast.xml.gz .
     gzip -d psiblast.xml.gz
 else
+    ## initial search against uniref90 ##
     ./psiblast -query seq.fasta      \\
                -db $datdir/uniref90.fasta \\
                -num_alignments 20000 \\
@@ -100,6 +101,7 @@ else
                -out_pssm pssm        \\
                -evalue $evalue       \\
                -num_threads 1
+    ## jump start search against uniprot-goa ##
     ./psiblast -in_pssm pssm         \\
                -db $datdir/lib.fasta \\
                -num_alignments 20000 \\
@@ -125,16 +127,16 @@ rm -rf $tmpdir
 #### job template END ##############
 
 #### Job submit START ##############
-walltime="walltime=10:00:00,mem=10gb"
+walltime="walltime=10:00:00,mem=7gb"
 JOBS = jobsubmit.JOBS(walltime=walltime, priority=Q)
 for s in ss:
     datadir=os.path.join(outdir,s)
     tag="PSI_"+s+'_'+str(run) # uniq name for job
     jobname=os.path.join(recorddir,tag)
     
-    jobOutput=[os.path.join(datadir,"psiblast_GOfreq_MF"),
-               os.path.join(datadir,"psiblast_GOfreq_BP"),
-               os.path.join(datadir,"psiblast_GOfreq_CC")]
+    jobOutput=[os.path.join(datadir,"psiblast_gwGOfreq_MF"),
+               os.path.join(datadir,"psiblast_gwGOfreq_BP"),
+               os.path.join(datadir,"psiblast_gwGOfreq_CC")]
     
     mod=jobmod.safe_substitute(dict(
         #tmpdir=os.path.join("/tmp",os.getenv("USER"),tag),
