@@ -32,11 +32,26 @@ import subprocess
 import textwrap
 
 obo_url="http://geneontology.org/ontology/go-basic.obo"
+color_list=["red","orange","yellow","green","cyan","magenta","white"]
 
 def cscore2csv(GOfreq_txt='',obo_dict=dict(),infmt="GOfreq",outfmt="default",
     excludeGO="GO:0005515,GO:0005488,GO:0003674,GO:0008150,GO:0005575",
-    target=''):
-    '''parse GO predictions and output to CSV format'''
+    target='',min_cscore=0):
+    '''parse GO predictions and output to CSV format
+
+    options:
+        infmt - (input format)
+            GOfreq: (default) GOterm Aspect Cscore
+            COFACTOR: GOterm Cscore Name
+            GoFDR: Target GOterm Cscore
+        outfmt - output format
+            default: GOterm Aspect Cscore Name
+            CAFA: GOterm Cscore
+        excludeGO - list of GO terms to be excluded.
+            default is to exclude root terms and protein binding
+        target - target name
+        min_cscore - minimum cscore below which terms are not considered
+    '''
     if isinstance(excludeGO,str):
         excludeGO=excludeGO.split(',')
     
@@ -64,7 +79,7 @@ def cscore2csv(GOfreq_txt='',obo_dict=dict(),infmt="GOfreq",outfmt="default",
         Cscore=float("%.2f"%float(Cscore))
 
         ## [4] Remove all prediction with zero confidence
-        if Cscore<=0:
+        if Cscore<=min_cscore:
             continue
 
         for Aspect in obo_dict:
@@ -117,16 +132,20 @@ def detect_graphviz(execpath=''):
 
 def make_GOterm_node(GOterm,obo_dict,cscore=0):
     '''make node in graphviz graph for a GO term'''
-    color_list=["red","orange","yellow","green","cyan","blue","white"]
     color=color_list[min([int((1-cscore)*10),len(color_list)-1])]
     GVtxt='"%s"[label="%s" shape=rectangle fillcolor=%s style=filled];'%(
         GOterm,GOterm+'\n'+textwrap.fill(obo_dict.Term(GOterm).name,25),color)
     return GVtxt
 
-def draw_GO_DAG(report_dict,dag_img,obo_dict,T,execpath):
+def draw_GO_DAG(report_dict,dag_img,obo_dict,T,execpath,
+    cscore_min=0.3,color_term_list=[]):
     '''plot directed acyclic graph listed for GO terms listed in "report_dict".
     write the image file to "dag_img". use "T" as output format. Use graphviz
-    executable "execpath" for image compilation
+    executable "execpath" for image compilation.
+
+    option:
+        cscore_min - minimum cscore to be plotted, default is 0.3
+        color_term_list - list of explicit GO terms to be colored
     '''
     GOterm_list=[]
     is_a_list=[]
@@ -135,7 +154,12 @@ def draw_GO_DAG(report_dict,dag_img,obo_dict,T,execpath):
         for GOterm in report_dict[Aspect]:
             if not GOterm in GOterm_list:
                 cscore=report_dict[Aspect][GOterm]
-                GVtxt+=make_GOterm_node(GOterm,obo_dict,cscore)
+                if cscore<cscore_min:
+                    continue
+                if not color_term_list or GOterm in color_term_list:
+                    GVtxt+=make_GOterm_node(GOterm,obo_dict,cscore)
+                else:
+                    GVtxt+=make_GOterm_node(GOterm,obo_dict)
                 GOterm_list.append(GOterm)
 
             # set of parent nodes whose is_a relation is plotted,
@@ -156,7 +180,12 @@ def draw_GO_DAG(report_dict,dag_img,obo_dict,T,execpath):
                             GVtxt+='"%s"->"%s";'%(GOterm,direct_parent)
                             is_a_list.append((GOterm,direct_parent))
                             if not direct_parent in GOterm_list:
-                                GVtxt+=make_GOterm_node(direct_parent,obo_dict)
+                                if not direct_parent in color_term_list or \
+                                   not direct_parent in report_dict[Aspect]:
+                                    GVtxt+=make_GOterm_node(direct_parent,obo_dict)
+                                else:
+                                    GVtxt+=make_GOterm_node(direct_parent,obo_dict,
+                                        report_dict[Aspect][direct_parent])
                                 GOterm_list.append(GOterm)
     GVtxt+="}"
 
@@ -166,7 +195,7 @@ def draw_GO_DAG(report_dict,dag_img,obo_dict,T,execpath):
     fp=open(dag_img,'w')
     fp.write(stdout)
     fp.close()
-    return
+    return GVtxt
 
 if __name__=="__main__":
     infmt="GOfreq"
