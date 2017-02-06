@@ -31,9 +31,12 @@ def read_multiple_fasta(fasta_file):
     '''
     header_list=[]
     sequence_list=[]
-    fp=open(fasta_file,'rU')
-    txt=fp.read().strip().lstrip('>')
-    fp.close()
+    if fasta_file=='-':
+        txt=sys.stdin.read().strip().lstrip('>')
+    else:
+        fp=open(fasta_file,'rU')
+        txt=fp.read().strip().lstrip('>')
+        fp.close()
     if not txt:
         return header_list,sequence_list
     for block in txt.split('\n>'):
