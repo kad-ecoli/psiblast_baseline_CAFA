@@ -55,9 +55,12 @@ if __name__=="__main__":
         exit()
     
     sequence=read_single_fasta(sys.argv[1])
-    fp=open(sys.argv[2],'rU')
-    blastp_xml=fp.read()
-    fp.close()
+    if sys.argv[2]=='-':
+        blastp_xml=sys.stdin.read()
+    else:
+        fp=open(sys.argv[2],'rU')
+        blastp_xml=fp.read()
+        fp.close()
     blastp_msa=blast2msa(sequence,blastp_xml)
 
     if len(sys.argv)==3:
